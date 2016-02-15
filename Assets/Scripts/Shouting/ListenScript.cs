@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Runtime.InteropServices;
+using System.Text;
 
 public class ListenScript : MonoBehaviour {
     /*
@@ -11,19 +12,23 @@ public class ListenScript : MonoBehaviour {
 
     // import splistener library functions
     [DllImport("splistener")]
-    private static extern int spInitListener(string model_path);
+    private static extern bool spInitListener(string model_path, string mic, int sample_rate);
+    [DllImport("splistener")]
+    private static extern bool spListen(StringBuilder words, int len);
     [DllImport("splistener")]
     private static extern void spCleanUp();
+    [DllImport("splistener")]
+    private static extern string spGetError();
 
 
     void Awake() {
-        int res = spInitListener(Application.dataPath + "/libs/pocketsphinx/model/en-us/");
-        Debug.Log(res);
-        if (res < 1) {
+        if (spInitListener(Application.dataPath + "/libs/pocketsphinx/model/en-us/", null, 16000)) {
             Debug.Log("splistener failed to initialize!");
+            Debug.Log("splistener error: " + spGetError());
         }
         else {
             // start voice command coroutine
+            Debug.Log("splistener initialized successfully!");
         }
     }
 

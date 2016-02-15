@@ -18,7 +18,7 @@
 static ps_decoder_t *ps = NULL;
 static cmd_ln_t *config = NULL;
 
-static ad_rec_t *ad;
+static ad_rec_t *ad = NULL;
 static int16_t buf[SPLBUFSIZE];
 static bool uttered;
 
@@ -76,6 +76,7 @@ SPLEXPORT bool spInitListener(	const char *model_path,
 		spFatal("failed to open microphone :(");
 		return false;
 	}
+	
 	if (ad_start_rec(ad) < 0) {
 		spFatal("failed to start recording :(");
 		return false;
@@ -138,6 +139,9 @@ SPLEXPORT void spCleanUp() {
 	// Note: log file is closed automatically
 }
 
-SPLEXPORT const char *spGetError() {
-	return sp_error.c_str();
+SPLEXPORT char *spGetError() {
+	char *s = new char[sp_error.size() + 1];
+	std::copy(sp_error.begin(), sp_error.end(), s);
+	s[sp_error.size()] = '\0';
+	return s;
 }

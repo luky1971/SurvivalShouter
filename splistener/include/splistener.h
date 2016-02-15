@@ -76,10 +76,14 @@ SPLEXPORT bool spListen(char *words, int len);
 SPLEXPORT void spCleanUp();
 
 /**
+ * Gets the last error if there was one.
+ * Returns a writeable copy of the string for 
+ * compatibility with managed .NET environments.
+ *
  * @return The last error message if there was an error,
  *         otherwise an empty string.
  */
-SPLEXPORT const char *spGetError();
+SPLEXPORT char *spGetError();
 
 #ifdef SPLCDECL
 }

@@ -1,0 +1,50 @@
+# This gitignore was shamelessly stolen from Scott Richmond (and modified)
+# http://www.strichnet.com/using-git-with-3d-games/
+
+# =============== #
+# Unity generated #
+# =============== #
+Temp/
+Library/
+ 
+# ===================================== #
+# Visual Studio / MonoDevelop generated #
+# ===================================== #
+ExportedObj/
+obj/
+Release/
+Debug/
+*.svd
+*.userprefs
+/*.csproj
+*.pidb
+*.exp
+*.iobj
+*.ipdb
+*.lib
+*.pdb
+*.opendb
+*.filters
+*.suo
+*.sln
+*.vcxproj
+*.sdf
+*.user
+*.unityproj
+*.booproj
+ 
+# ============ #
+# OS generated #
+# ============ #
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# === #
+# etc #
+# === #
+/bin/

@@ -30,44 +30,39 @@ extern "C" {
  *                   language model and dictionary files 
  *                   that should be used (ex. 
  *                   pocketsphinx/model/en-us/).
- * @param mic Name of the microphone to use,
- *            or NULL to use the default microphone.
- * @param sample_rate The sample rate of the recording 
- *        (ex. try 16000).
+ * @param mic_name Name of the microphone to use,
+ *                 or NULL to use the default microphone.
+ * @param sample_rate The sample rate of the recording.
+ * @param delay The amount of time in milliseconds 
+ *              between decodings of microphone audio.
  * @return true if initialization was successful, 
  *         otherwise false.
  */
 SPLEXPORT bool spInitListener(	const char *model_path, 
-								const char *mic, 
-								int32_t sample_rate);
+								const char *mic_name, 
+								int32_t sample_rate = 16000, 
+								int delay = 100);
 
 /**
- * You must sucessfully call spInitListener 
- * once before using this function.
+ * Gets the last string of recognized speech
+ * or an empty string if nothing has been 
+ * decoded since the last call to spGetWords.
  *
- * Reads the next block of audio from the microphone
- * up to SPLBUFSIZE number of samples (defined above).
- * If a speaking session was completed in that block,
- * the transcription is stored in the string words.
+ * Returns a writeable copy of the string for
+ * compatibility with managed .NET environments.
+ * If the caller is not in a managed environment,
+ * it is the caller's responsibility to free the
+ * returned string's memory.
  *
- * When calling this function in a realtime loop, delay
- * by some amount of time between calls keeping in mind
- * your recording's sample rate and maximum samples read
- * per call (ex. sleep the thread for 100 milliseconds)
- * so that some audio can be recorded for the next call.
+ * If you want to be informed of errors in the
+ * recording and decoding process, you will 
+ * have to check manually (perhaps periodically) 
+ * by calling spGetError.
  *
- * If you want to be informed of errors in this 
- * function, you will have to check manually
- * (perhaps periodically) by calling spGetError.
- *
- * @param words String where speech transcription is 
- *              stored if the function returns true.
- * @param len Maximum number of characters to store in 
- *            string words (including null character).
- * @return true if a speech session was completed and
- *         transcribed this block, otherwise false.
+ * @return The last string of recognized speech
+ *         or an empty string.
  */
-SPLEXPORT bool spListen(char *words, int len);
+SPLEXPORT char *spGetWords();
 
 /**
  * Call at the end of a speech recognition application
@@ -79,6 +74,9 @@ SPLEXPORT void spCleanUp();
  * Gets the last error if there was one.
  * Returns a writeable copy of the string for 
  * compatibility with managed .NET environments.
+ * If the caller is not in a managed environment,
+ * it is the caller's responsibility to free the 
+ * returned string's memory.
  *
  * @return The last error message if there was an error,
  *         otherwise an empty string.

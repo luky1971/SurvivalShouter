@@ -12,15 +12,25 @@
 #include <algorithm>
 #include <fstream>
 #include <string>
+#include <chrono>
+#include <thread>
+#include <mutex>
 #include "pocketsphinx.h"
 #include "sphinxbase/ad.h"
 
 static ps_decoder_t *ps = NULL;
 static cmd_ln_t *config = NULL;
 
-static ad_rec_t *ad = NULL;
+static ad_rec_t *mic = NULL;
 static int16_t buf[SPLBUFSIZE];
 static bool uttered;
+
+static std::mutex ps_mtx;
+
+static char *words = NULL;
+static uint16_t words_buf_size;
+static std::mutex words_mtx;
+static std::thread listen_thread;
 
 static std::ofstream sp_log;
 static std::string sp_error;
@@ -36,9 +46,115 @@ static void spFatal(std::string err_msg) {
 	spCleanUp();
 }
 
+/**
+ * You must sucessfully call spInitListener
+ * once before using this function.
+ *
+ * Reads the next block of audio from the microphone
+ * up to SPLBUFSIZE number of samples
+ * (defined in splistener.h).
+ * If an utterance was completed in that block,
+ * the transcription is stored in the string words.
+ *
+ * When calling this function in a realtime loop, delay
+ * by some amount of time between calls keeping in mind
+ * your recording's sample rate and maximum samples read
+ * per call (ex.sleep the thread for 100 milliseconds)
+ * so that some audio can be recorded for the next call.
+ *
+ * @return true if a speech session was completed and
+ *         transcribed this block, otherwise false.
+ */
+static bool spDecode() {
+	std::lock_guard<std::mutex> ps_lock(ps_mtx);
+	if(!mic || !ps)
+		return false;
+
+	int samples_read = ad_read(mic, buf, SPLBUFSIZE);
+	if (samples_read <= 0) {
+		spError("failed to read audio :(");
+		return false;
+	}
+
+	ps_process_raw(ps, buf, samples_read, FALSE, FALSE);
+	bool talking = ps_get_in_speech(ps);
+
+	// Just started talking
+	if (talking && !uttered) {
+		uttered = true;
+		return false;
+	}
+
+	// Stopped talking, so transcribe what was said
+	// and begin the next utterance
+	if (!talking && uttered) {
+		ps_end_utt(ps);
+		const char *trans = ps_get_hyp(ps, NULL);
+
+		if (ps_start_utt(ps) < 0) {
+			spError("failed to start utterance :(");
+		}
+		uttered = false;
+
+		int l = strlen(trans);
+		if (trans && l > 0) {
+			std::lock_guard<std::mutex> lock(words_mtx);
+			if (words && l + 1 > words_buf_size) {
+				delete words;
+				words = NULL;
+			}
+			if (!words) {
+				words = new char[l + 1];
+				words_buf_size = l + 1;
+			}
+
+			std::copy(trans, trans + l, words);
+			words[l] = '\0';
+			
+			return true;
+		}
+	}
+
+	return false;
+}
+
+/**
+ * Transcribes speech from microphone audio
+ * at intervals of specified length in milliseconds.
+ *
+ * @param delay The delay in milliseconds
+ *              between decodes.
+ */
+static void spListen(int delay) {
+	std::chrono::milliseconds delay_dur(delay);
+
+	while (true) {
+		spDecode();
+		/*
+		std::unique_lock<std::mutex> lock(words_mtx);
+		if (words) {
+			words = NULL;
+		}
+		else {
+			words = new char[7];
+			words[0] = 'a';
+			words[1] = 'p';
+			words[2] = 'p';
+			words[3] = 'l';
+			words[4] = 'e';
+			words[5] = 's';
+			words[6] = '\0';
+		}
+		lock.unlock();
+		*/
+		std::this_thread::sleep_for(delay_dur);
+	}
+}
+
 SPLEXPORT bool spInitListener(	const char *model_path, 
-								const char *mic, 
-								int32_t sample_rate) {
+								const char *mic_name, 
+								int32_t sample_rate, 
+								int delay) {
 	sp_log.open("splog.txt", std::ios_base::app);
 	sp_error = "";
 
@@ -72,12 +188,12 @@ SPLEXPORT bool spInitListener(	const char *model_path,
 	// Start recording
 	sp_log << "Opening microphone with sample rate " 
 		<< sample_rate << std::endl;
-	if ((ad = ad_open_dev(mic, sample_rate)) == NULL) {
+	if ((mic = ad_open_dev(mic_name, sample_rate)) == NULL) {
 		spFatal("failed to open microphone :(");
 		return false;
 	}
 	
-	if (ad_start_rec(ad) < 0) {
+	if (ad_start_rec(mic) < 0) {
 		spFatal("failed to start recording :(");
 		return false;
 	}
@@ -87,55 +203,33 @@ SPLEXPORT bool spInitListener(	const char *model_path,
 	}
 	uttered = false;
 
+	// Continue recording on new thread
+	listen_thread = std::thread(spListen, delay);
 	return true;
 }
 
-SPLEXPORT bool spListen(char *words, int len) {
-	int samples_read = ad_read(ad, buf, SPLBUFSIZE);
-	if (samples_read <= 0) {
-		spError("failed to read audio :(");
-		return false;
+SPLEXPORT char *spGetWords() {
+	std::lock_guard<std::mutex> lock(words_mtx);
+	if (words) {
+		char *s = words;
+		words = NULL;
+		return s;
 	}
-	
-	ps_process_raw(ps, buf, samples_read, FALSE, FALSE);
-	bool talking = ps_get_in_speech(ps);
-
-	// Just started talking
-	if (talking && !uttered) {
-		uttered = true;
-		return false;
+	else {
+		return new char('\0');
 	}
-
-	// Stopped talking, so transcribe what was said
-	// and begin the next utterance
-	if (!talking && uttered) {
-		ps_end_utt(ps);
-		const char *trans = ps_get_hyp(ps, NULL);
-
-		if (ps_start_utt(ps) < 0) {
-			spError("failed to start utterance :(");
-		}
-		uttered = false;
-
-		int l = strlen(trans);
-		if (trans && l > 0) {
-			l = l <= len - 1 ? l : len - 1;
-			std::copy(trans, trans + l, words);
-			words[l] = '\0';
-			return true;
-		}
-	}
-
-	return false;
 }
 
 SPLEXPORT void spCleanUp() {
-	if (ad)
-		ad_close(ad);
+	std::lock_guard<std::mutex> ps_lock(ps_mtx);
+	if (mic)
+		ad_close(mic);
 	if (ps)
 		ps_free(ps);
 	if (config)
 		cmd_ln_free_r(config);
+	if (words)
+		delete words;
 	// Note: log file is closed automatically
 }
 

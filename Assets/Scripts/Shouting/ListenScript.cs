@@ -10,9 +10,9 @@ public class ListenScript : MonoBehaviour {
     
     // import splistener library functions
     [DllImport("splistener")]
-    private static extern bool spInitListener(string model_path, string mic, int sample_rate);
+    private static extern bool spInitListener(string model_path, string mic_name, int sample_rate, int delay);
     [DllImport("splistener")]
-    private static extern bool spListen(StringBuilder words, int len);
+    private static extern string spGetWords();
     [DllImport("splistener")]
     private static extern void spCleanUp();
     [DllImport("splistener")]
@@ -30,15 +30,15 @@ public class ListenScript : MonoBehaviour {
     }
 
     void Awake() {
-        if (!spInitListener(Application.dataPath + "/libs/pocketsphinx/model/en-us/", null, 16000)) {
+        if(!spInitListener(Application.dataPath + "/libs/pocketsphinx/model/en-us/", null, 16000, 100)) {
             Debug.Log("splistener failed to initialize!");
             Debug.Log("splistener error: " + spGetError());
         }
         else {
-            // start voice command thread
+            // start voice command coroutine
             Debug.Log("splistener initialized successfully!");
-            listen_thread = new Thread(new ThreadStart(Listen));
-            listen_thread.Start();
+            // listen_thread = new Thread(new ThreadStart(Listen));
+            // listen_thread.Start();
         }
     }
 
@@ -50,10 +50,14 @@ public class ListenScript : MonoBehaviour {
 	// Update is called once per frame
 	void Update() {
         // Debug.Log(words);
+        string s = spGetWords();
+        if(s.Length > 0) {
+            Debug.Log(s);
+        }
 	}
 
     void OnApplicationQuit() {
-        listen_thread.Abort();
+        // listen_thread.Abort();
         spCleanUp();
     }
 }

@@ -1,11 +1,7 @@
 ﻿using UnityEngine;
+using System.Collections;
 using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading;
 
-// Note: the multithreading in this script should not be considered safe.
-// This script is mainly for demonstration purposes, and a production version
-// should probably have more thread syncing mechanisms in place
 public class ListenScript : MonoBehaviour {
     
     // import splistener library functions
@@ -18,46 +14,32 @@ public class ListenScript : MonoBehaviour {
     [DllImport("splistener")]
     private static extern string spGetError();
 
-    private static Thread listen_thread;
-    private static string words = "";
-    private static float transTime = 0f;
-
-    void Listen() {
-        while(true) {
-            Debug.Log(Time.time);
-            Thread.Sleep(100);
+    IEnumerator Listen()
+    {
+        string s;
+        while (true)
+        {
+            s = spGetWords();
+            if (s.Length > 0) {
+                Debug.Log(s);
+            }
+            yield return null;
         }
     }
-
+    
     void Awake() {
         if(!spInitListener(Application.dataPath + "/libs/pocketsphinx/model/en-us/", null, 16000, 100)) {
             Debug.Log("splistener failed to initialize!");
             Debug.Log("splistener error: " + spGetError());
         }
         else {
-            // start voice command coroutine
+            // TODO: start voice command coroutine
             Debug.Log("splistener initialized successfully!");
-            // listen_thread = new Thread(new ThreadStart(Listen));
-            // listen_thread.Start();
+            StartCoroutine(Listen());
         }
     }
 
-	// Use this for initialization
-	void Start() {
-
-	}
-	
-	// Update is called once per frame
-	void Update() {
-        // Debug.Log(words);
-        string s = spGetWords();
-        if(s.Length > 0) {
-            Debug.Log(s);
-        }
-	}
-
     void OnApplicationQuit() {
-        // listen_thread.Abort();
         spCleanUp();
     }
 }

@@ -39,9 +39,9 @@ extern "C" {
  *         otherwise false.
  */
 SPLEXPORT bool spInitListener(	const char *model_path, 
-								const char *mic_name, 
-								int32_t sample_rate = 16000, 
-								int delay = 100);
+                                const char *mic_name, 
+                                int32_t sample_rate = 16000, 
+                                int delay = 100);
 
 /**
  * Gets the last string of recognized speech

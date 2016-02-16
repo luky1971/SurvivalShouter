@@ -36,14 +36,14 @@ static std::ofstream sp_log;
 static std::string sp_error;
 
 static void spError(std::string err_msg) {
-	sp_error = "ERROR: " + err_msg;
-	sp_log << sp_error << std::endl;
+    sp_error = "ERROR: " + err_msg;
+    sp_log << sp_error << std::endl;
 }
 
 static void spFatal(std::string err_msg) {
-	sp_error = "FATAL ERROR: " + err_msg;
-	sp_log << sp_error << std::endl;
-	spCleanUp();
+    sp_error = "FATAL ERROR: " + err_msg;
+    sp_log << sp_error << std::endl;
+    spCleanUp();
 }
 
 /**
@@ -66,56 +66,56 @@ static void spFatal(std::string err_msg) {
  *         transcribed this block, otherwise false.
  */
 static bool spDecode() {
-	std::lock_guard<std::mutex> ps_lock(ps_mtx);
-	if(!mic || !ps)
-		return false;
+    std::lock_guard<std::mutex> ps_lock(ps_mtx);
+    if(!mic || !ps)
+        return false;
 
-	int samples_read = ad_read(mic, buf, SPLBUFSIZE);
-	if (samples_read <= 0) {
-		spError("failed to read audio :(");
-		return false;
-	}
+    int samples_read = ad_read(mic, buf, SPLBUFSIZE);
+    if (samples_read <= 0) {
+        spError("failed to read audio :(");
+        return false;
+    }
 
-	ps_process_raw(ps, buf, samples_read, FALSE, FALSE);
-	bool talking = ps_get_in_speech(ps);
+    ps_process_raw(ps, buf, samples_read, FALSE, FALSE);
+    bool talking = ps_get_in_speech(ps);
 
-	// Just started talking
-	if (talking && !uttered) {
-		uttered = true;
-		return false;
-	}
+    // Just started talking
+    if (talking && !uttered) {
+        uttered = true;
+        return false;
+    }
 
-	// Stopped talking, so transcribe what was said
-	// and begin the next utterance
-	if (!talking && uttered) {
-		ps_end_utt(ps);
-		const char *trans = ps_get_hyp(ps, NULL);
+    // Stopped talking, so transcribe what was said
+    // and begin the next utterance
+    if (!talking && uttered) {
+        ps_end_utt(ps);
+        const char *trans = ps_get_hyp(ps, NULL);
 
-		if (ps_start_utt(ps) < 0) {
-			spError("failed to start utterance :(");
-		}
-		uttered = false;
+        if (ps_start_utt(ps) < 0) {
+            spError("failed to start utterance :(");
+        }
+        uttered = false;
 
-		int l = strlen(trans);
-		if (trans && l > 0) {
-			std::lock_guard<std::mutex> lock(words_mtx);
-			if (words && l + 1 > words_buf_size) {
-				delete words;
-				words = NULL;
-			}
-			if (!words) {
-				words = new char[l + 1];
-				words_buf_size = l + 1;
-			}
+        int l = strlen(trans);
+        if (trans && l > 0) {
+            std::lock_guard<std::mutex> lock(words_mtx);
+            if (words && l + 1 > words_buf_size) {
+                delete words;
+                words = NULL;
+            }
+            if (!words) {
+                words = new char[l + 1];
+                words_buf_size = l + 1;
+            }
 
-			std::copy(trans, trans + l, words);
-			words[l] = '\0';
-			
-			return true;
-		}
-	}
+            std::copy(trans, trans + l, words);
+            words[l] = '\0';
+            
+            return true;
+        }
+    }
 
-	return false;
+    return false;
 }
 
 /**
@@ -126,116 +126,116 @@ static bool spDecode() {
  *              between decodes.
  */
 static void spListen(int delay) {
-	std::chrono::milliseconds delay_dur(delay);
+    std::chrono::milliseconds delay_dur(delay);
 
-	while (true) {
-		spDecode();
-		/*
-		std::unique_lock<std::mutex> lock(words_mtx);
-		if (words) {
-			words = NULL;
-		}
-		else {
-			words = new char[7];
-			words[0] = 'a';
-			words[1] = 'p';
-			words[2] = 'p';
-			words[3] = 'l';
-			words[4] = 'e';
-			words[5] = 's';
-			words[6] = '\0';
-		}
-		lock.unlock();
-		*/
-		std::this_thread::sleep_for(delay_dur);
-	}
+    while (true) {
+        spDecode();
+        /*
+        std::unique_lock<std::mutex> lock(words_mtx);
+        if (words) {
+            words = NULL;
+        }
+        else {
+            words = new char[7];
+            words[0] = 'a';
+            words[1] = 'p';
+            words[2] = 'p';
+            words[3] = 'l';
+            words[4] = 'e';
+            words[5] = 's';
+            words[6] = '\0';
+        }
+        lock.unlock();
+        */
+        std::this_thread::sleep_for(delay_dur);
+    }
 }
 
 SPLEXPORT bool spInitListener(	const char *model_path, 
-								const char *mic_name, 
-								int32_t sample_rate, 
-								int delay) {
-	sp_log.open("splog.txt", std::ios_base::app);
-	sp_error = "";
+                                const char *mic_name, 
+                                int32_t sample_rate, 
+                                int delay) {
+    sp_log.open("splog.txt", std::ios_base::app);
+    sp_error = "";
 
-	std::string path(model_path);
-	if (path.back() == '/')
-		path.pop_back();
+    std::string path(model_path);
+    if (path.back() == '/')
+        path.pop_back();
 
-	std::string lang(path.substr(path.find_last_of("/\\") + 1));
-	
-	sp_log << std::endl 
-		<< "Using language " << lang << " at " << path << std::endl;
+    std::string lang(path.substr(path.find_last_of("/\\") + 1));
+    
+    sp_log << std::endl 
+        << "Using language " << lang << " at " << path << std::endl;
 
-	// Initialize pocketsphinx
-	config = cmd_ln_init(NULL, ps_args(), TRUE,
-		"-hmm", (path + "/" + lang).c_str(),
-		"-lm", (path + "/" + lang + ".lm.bin").c_str(),
-		"-dict", (path + "/cmudict-" + lang + ".dict").c_str(),
-		NULL);
+    // Initialize pocketsphinx
+    config = cmd_ln_init(NULL, ps_args(), TRUE,
+        "-hmm", (path + "/" + lang).c_str(),
+        "-lm", (path + "/" + lang + ".lm.bin").c_str(),
+        "-dict", (path + "/cmudict-" + lang + ".dict").c_str(),
+        NULL);
 
-	if (config == NULL) {
-		spFatal("pocketsphinx config initialization failed :(");
-		return false;
-	}
-	
-	if ((ps = ps_init(config)) == NULL) {
-		spFatal("pocketsphinx initialization failed :(");
-		return false;
-	}
+    if (config == NULL) {
+        spFatal("pocketsphinx config initialization failed :(");
+        return false;
+    }
+    
+    if ((ps = ps_init(config)) == NULL) {
+        spFatal("pocketsphinx initialization failed :(");
+        return false;
+    }
 
 
-	// Start recording
-	sp_log << "Opening microphone with sample rate " 
-		<< sample_rate << std::endl;
-	if ((mic = ad_open_dev(mic_name, sample_rate)) == NULL) {
-		spFatal("failed to open microphone :(");
-		return false;
-	}
-	
-	if (ad_start_rec(mic) < 0) {
-		spFatal("failed to start recording :(");
-		return false;
-	}
-	if (ps_start_utt(ps) < 0) {
-		spFatal("failed to start utterance :(");
-		return false;
-	}
-	uttered = false;
+    // Start recording
+    sp_log << "Opening microphone with sample rate " 
+        << sample_rate << std::endl;
+    if ((mic = ad_open_dev(mic_name, sample_rate)) == NULL) {
+        spFatal("failed to open microphone :(");
+        return false;
+    }
+    
+    if (ad_start_rec(mic) < 0) {
+        spFatal("failed to start recording :(");
+        return false;
+    }
+    if (ps_start_utt(ps) < 0) {
+        spFatal("failed to start utterance :(");
+        return false;
+    }
+    uttered = false;
 
-	// Continue recording on new thread
-	listen_thread = std::thread(spListen, delay);
-	return true;
+    // Continue recording on new thread
+    listen_thread = std::thread(spListen, delay);
+    return true;
 }
 
 SPLEXPORT char *spGetWords() {
-	std::lock_guard<std::mutex> lock(words_mtx);
-	if (words) {
-		char *s = words;
-		words = NULL;
-		return s;
-	}
-	else {
-		return new char('\0');
-	}
+    std::lock_guard<std::mutex> lock(words_mtx);
+    if (words) {
+        char *s = words;
+        words = NULL;
+        return s;
+    }
+    else {
+        return new char('\0');
+    }
 }
 
 SPLEXPORT void spCleanUp() {
-	std::lock_guard<std::mutex> ps_lock(ps_mtx);
-	if (mic)
-		ad_close(mic);
-	if (ps)
-		ps_free(ps);
-	if (config)
-		cmd_ln_free_r(config);
-	if (words)
-		delete words;
-	// Note: log file is closed automatically
+    std::lock_guard<std::mutex> ps_lock(ps_mtx);
+    if (mic)
+        ad_close(mic);
+    if (ps)
+        ps_free(ps);
+    if (config)
+        cmd_ln_free_r(config);
+    if (words)
+        delete words;
+    // Note: log file is closed automatically
 }
 
 SPLEXPORT char *spGetError() {
-	char *s = new char[sp_error.size() + 1];
-	std::copy(sp_error.begin(), sp_error.end(), s);
-	s[sp_error.size()] = '\0';
-	return s;
+    char *s = new char[sp_error.size() + 1];
+    std::copy(sp_error.begin(), sp_error.end(), s);
+    s[sp_error.size()] = '\0';
+    return s;
 }

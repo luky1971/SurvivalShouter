@@ -1,6 +1,7 @@
 # Survival Shouter
 
-Survival Shouter is a modification of the popular Survival Shooter game demo by Unity Technologies. 
+Survival Shouter is a modification of the popular Survival Shooter game demo by Unity Technologies
+(https://www.assetstore.unity3d.com/en/#!/content/40756).
 
 ## Setup
 
@@ -35,5 +36,8 @@ details, see the file `specs.pdf`.
 
 ## Acknowledgments
 
-The original Survival Shooter demo is Copyright (c) 2015 Unity Technologies.
+The original Survival Shooter demo is Copyright (c) 2015 Unity Technologies. 
 PocketSphinx is Copyright (c) 1999-2008 Carnegie Mellon University.
+
+This game also uses assets from Ball Pack, Copyright (c) 2011 YounGen Tech, 
+and Detonator Explosion Framework, Copyright (c) 2014 Ben Throop.

@@ -66,6 +66,8 @@ static void spFatal(std::string err_msg) {
  *         transcribed this block, otherwise false.
  */
 static bool spDecode() {
+	// lock pocketsphinx resources to make sure they 
+	// don't get freed by main thread while in use
     std::lock_guard<std::mutex> ps_lock(ps_mtx);
     if(!mic || !ps)
         return false;
@@ -130,23 +132,6 @@ static void spListen(int delay) {
 
     while (true) {
         spDecode();
-        /*
-        std::unique_lock<std::mutex> lock(words_mtx);
-        if (words) {
-            words = NULL;
-        }
-        else {
-            words = new char[7];
-            words[0] = 'a';
-            words[1] = 'p';
-            words[2] = 'p';
-            words[3] = 'l';
-            words[4] = 'e';
-            words[5] = 's';
-            words[6] = '\0';
-        }
-        lock.unlock();
-        */
         std::this_thread::sleep_for(delay_dur);
     }
 }
@@ -222,15 +207,25 @@ SPLEXPORT char *spGetWords() {
 
 SPLEXPORT void spCleanUp() {
     std::lock_guard<std::mutex> ps_lock(ps_mtx);
-    if (mic)
-        ad_close(mic);
-    if (ps)
-        ps_free(ps);
-    if (config)
-        cmd_ln_free_r(config);
-    if (words)
-        delete words;
-    // Note: log file is closed automatically
+	if (mic) {
+		ad_close(mic);
+		mic = NULL;
+	}
+	if (ps) {
+		ps_free(ps);
+		ps = NULL;
+	}
+	if (config) {
+		cmd_ln_free_r(config);
+		config = NULL;
+	}
+	if (words) {
+		delete words;
+		words = NULL;
+	}
+	if (sp_log.is_open()) {
+		sp_log.close();
+	}
 }
 
 SPLEXPORT char *spGetError() {

@@ -48,7 +48,7 @@ public class BombShout : MonoBehaviour {
     
     void Awake() {
         lastTime = -cooldown;
-        if (!spInitListener(Application.dataPath + "/libs/pocketsphinx/model/en-us/", 
+        if (!spInitListener(Application.dataPath + "/pocketsphinx/model/en-us/", 
             null, 16000, 100)) {
             Debug.Log("splistener failed to initialize!");
             Debug.Log("splistener error: " + spGetError());

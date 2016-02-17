@@ -29,9 +29,9 @@ You will also note that there is a cooldown between bombs.
 
 ## Technology
 
-This game uses the speech recognition library pocketsphinx, which is a part of CMU Sphinx. `splistener` is the C++
+This game uses the speech recognition library `pocketsphinx`, which is a part of `CMU Sphinx`. `splistener` is the C++
 plugin that manages the pocketsphinx backend and allows Unity to access the recognized speech data. The C#
-scripts that have been added for this version of the game are found in Assets/Scripts/Shouting. For more technical
+scripts that have been added for this version of the game are found in `Assets/Scripts/Shouting`. For more technical
 details, see the file `specs.pdf`.
 
 ## Acknowledgments

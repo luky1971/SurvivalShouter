@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using CompleteProject;
 
 public class EnemyAttack : MonoBehaviour
 {

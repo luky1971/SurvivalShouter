@@ -20,28 +20,23 @@ public class BombShout : MonoBehaviour {
     private float lastTime;
 
     void ProcessShout(string shout) {
-        if(Time.time - lastTime > cooldown) {
-            Vector3 pos = GetComponent<Transform>().position;
-            pos.y = 0.5f;
-            Instantiate(bomb, pos, Quaternion.identity);
+        if(Time.time - lastTime > cooldown 
+            && (shout.IndexOf("bomb") >= 0 
+            || shout.IndexOf("explode") >= 0 
+            || shout.IndexOf("blow") >= 0)) {
+            Instantiate(bomb, 
+                        new Vector3(transform.position.x, 
+                                    transform.position.y, 
+                                    transform.position.z), 
+                        Quaternion.identity);
             lastTime = Time.time;
-            /*
-            if (shout.IndexOf("bomb") >= 0 || shout.IndexOf("explode") >= 0 || shout.IndexOf("blow") >= 0) {
-                Vector3 pos = GetComponent<Transform>().position;
-                pos.y = 0.5f;
-                Instantiate(bomb, pos, Quaternion.identity);
-                lastTime = Time.time;
-            }
-            */
         }
 
     }
 
-    IEnumerator Listen()
-    {
+    IEnumerator Listen() {
         string s;
-        while (true)
-        {
+        while (true) {
             s = spGetWords();
             if (s.Length > 0) {
                 Debug.Log(s);
@@ -52,22 +47,19 @@ public class BombShout : MonoBehaviour {
     }
     
     void Awake() {
-        
         lastTime = -cooldown;
-        Debug.Log(Application.dataPath);
-        if (!spInitListener(Application.dataPath + "/libs/pocketsphinx/model/en-us/", null, 16000, 100)) {
+        if (!spInitListener(Application.dataPath + "/libs/pocketsphinx/model/en-us/", 
+            null, 16000, 100)) {
             Debug.Log("splistener failed to initialize!");
             Debug.Log("splistener error: " + spGetError());
         }
         else {
-            // TODO: start voice command coroutine
             Debug.Log("splistener initialized successfully!");
             StartCoroutine(Listen());
         }
-        
     }
 
     void OnApplicationQuit() {
-        // spCleanUp();
+        spCleanUp();
     }
 }

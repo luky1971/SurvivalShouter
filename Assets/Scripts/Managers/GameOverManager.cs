@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using CompleteProject;
+using UnityEngine;
 
 public class GameOverManager : MonoBehaviour
 {

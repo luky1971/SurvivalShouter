@@ -23,7 +23,6 @@ static cmd_ln_t *config = NULL;
 
 static ad_rec_t *mic = NULL;
 static int16_t buf[SPLBUFSIZE];
-static bool uttered;
 
 static std::mutex ps_mtx;
 
@@ -66,6 +65,8 @@ static void spFatal(std::string err_msg) {
  *         transcribed this block, otherwise false.
  */
 static bool spDecode() {
+	static bool uttered = false;
+
 	// lock pocketsphinx resources to make sure they 
 	// don't get freed by main thread while in use
     std::lock_guard<std::mutex> ps_lock(ps_mtx);
@@ -127,9 +128,26 @@ static bool spDecode() {
  * @param delay The delay in milliseconds
  *              between decodes.
  */
-static void spListen(int delay) {
-    std::chrono::milliseconds delay_dur(delay);
+static void spListen(int32_t sample_rate, int delay) {
+	// Start recording
+	sp_log << "Opening microphone with sample rate "
+		<< sample_rate << std::endl;
+	if ((mic = ad_open_dev(NULL, sample_rate)) == NULL) {
+		spFatal("failed to open microphone :(");
+		return;
+	}
 
+	if (ad_start_rec(mic) < 0) {
+		spFatal("failed to start recording :(");
+		return;
+	}
+	if (ps_start_utt(ps) < 0) {
+		spFatal("failed to start utterance :(");
+		return;
+	}
+
+    std::chrono::milliseconds delay_dur(delay);
+	// Record and decode loop
     while (true) {
         spDecode();
         std::this_thread::sleep_for(delay_dur);
@@ -178,27 +196,8 @@ SPLEXPORT bool spInitListener(	const char *model_path,
         return false;
     }
 
-
-    // Start recording
-    sp_log << "Opening microphone with sample rate " 
-        << sample_rate << std::endl;
-    if ((mic = ad_open_dev(NULL, sample_rate)) == NULL) {
-        spFatal("failed to open microphone :(");
-        return false;
-    }
-    
-    if (ad_start_rec(mic) < 0) {
-        spFatal("failed to start recording :(");
-        return false;
-    }
-    if (ps_start_utt(ps) < 0) {
-        spFatal("failed to start utterance :(");
-        return false;
-    }
-    uttered = false;
-
-    // Continue recording on new thread
-    listen_thread = std::thread(spListen, delay);
+    // Record on new thread
+    listen_thread = std::thread(spListen, sample_rate, delay);
     return true;
 }
 

@@ -30,6 +30,11 @@ extern "C" {
  *                   acoustic model and dictionary files 
  *                   that should be used (ex. 
  *                   pocketsphinx/model/en-us/).
+ *                   To work properly, the filenames
+ *                   in this directory should be structured
+ *                   like the ones in pocketsphinx/model/en-us/
+ *                   in the pocketsphinx distribution, replacing
+ *                   en-us with whatever language you're using.
  * @param kws_path File with keywords to recognize in
  *                 keyword spotting mode, or NULL to use
  *                 full language search instead of keyword

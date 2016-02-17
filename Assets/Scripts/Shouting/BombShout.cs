@@ -5,13 +5,13 @@ using System.Runtime.InteropServices;
 public class BombShout : MonoBehaviour {
     
     // import splistener library functions
-    [DllImport("splistener", CallingConvention = CallingConvention.StdCall)]
-    private static extern bool spInitListener(string model_path, string mic_name, int sample_rate, int delay);
-    [DllImport("splistener", CallingConvention = CallingConvention.StdCall)]
+    [DllImport("splistener")]
+    private static extern bool spInitListener(string model_path, string kws_path, int sample_rate, int delay);
+    [DllImport("splistener")]
     private static extern string spGetWords();
-    [DllImport("splistener", CallingConvention = CallingConvention.StdCall)]
+    [DllImport("splistener")]
     private static extern void spCleanUp();
-    [DllImport("splistener", CallingConvention = CallingConvention.StdCall)]
+    [DllImport("splistener")]
     private static extern string spGetError();
 
 

@@ -27,11 +27,13 @@ extern "C" {
  * Call before using other functions.
  *
  * @param model_path Path to the directory with the 
- *                   language model and dictionary files 
+ *                   acoustic model and dictionary files 
  *                   that should be used (ex. 
  *                   pocketsphinx/model/en-us/).
- * @param mic_name Name of the microphone to use,
- *                 or NULL to use the default microphone.
+ * @param kws_path File with keywords to recognize in
+ *                 keyword spotting mode, or NULL to use
+ *                 full language search instead of keyword
+ *                 search.
  * @param sample_rate The sample rate of the recording.
  * @param delay The amount of time in milliseconds 
  *              between decodings of microphone audio.
@@ -39,7 +41,7 @@ extern "C" {
  *         otherwise false.
  */
 SPLEXPORT bool spInitListener(	const char *model_path, 
-                                const char *mic_name, 
+                                const char *kws_path, 
                                 int32_t sample_rate = 16000, 
                                 int delay = 100);
 

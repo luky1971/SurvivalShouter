@@ -137,7 +137,7 @@ static void spListen(int delay) {
 }
 
 SPLEXPORT bool spInitListener(	const char *model_path, 
-                                const char *mic_name, 
+                                const char *kws_path, 
                                 int32_t sample_rate, 
                                 int delay) {
     sp_log.open("splog.txt", std::ios_base::app);
@@ -153,11 +153,20 @@ SPLEXPORT bool spInitListener(	const char *model_path,
         << "Using language " << lang << " at " << path << std::endl;
 
     // Initialize pocketsphinx
-    config = cmd_ln_init(NULL, ps_args(), TRUE,
-        "-hmm", (path + "/" + lang).c_str(),
-        "-lm", (path + "/" + lang + ".lm.bin").c_str(),
-        "-dict", (path + "/cmudict-" + lang + ".dict").c_str(),
-        NULL);
+	if (kws_path) {
+		config = cmd_ln_init(NULL, ps_args(), TRUE,
+			"-hmm", (path + "/" + lang).c_str(),
+			"-kws", kws_path,
+			"-dict", (path + "/cmudict-" + lang + ".dict").c_str(),
+			NULL);
+	}
+	else {
+		config = cmd_ln_init(NULL, ps_args(), TRUE,
+			"-hmm", (path + "/" + lang).c_str(),
+			"-lm", (path + "/" + lang + ".lm.bin").c_str(),
+			"-dict", (path + "/cmudict-" + lang + ".dict").c_str(),
+			NULL);
+	}
 
     if (config == NULL) {
         spFatal("pocketsphinx config initialization failed :(");
@@ -173,7 +182,7 @@ SPLEXPORT bool spInitListener(	const char *model_path,
     // Start recording
     sp_log << "Opening microphone with sample rate " 
         << sample_rate << std::endl;
-    if ((mic = ad_open_dev(mic_name, sample_rate)) == NULL) {
+    if ((mic = ad_open_dev(NULL, sample_rate)) == NULL) {
         spFatal("failed to open microphone :(");
         return false;
     }

@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.UI;
 using System.Collections;
 using System.Runtime.InteropServices;
 
@@ -14,24 +15,28 @@ public class BombShout : MonoBehaviour {
     [DllImport("splistener")]
     private static extern string spGetError();
 
-
     public GameObject bomb;
+    public Text bombText;
+
     public float cooldown = 10.0f;
+    public float initDelay = 2.0f; // delay at beginning of game before bombs can be used
     private float lastTime;
+    bool spinit = false;
 
     void ProcessShout(string shout) {
         if(Time.time - lastTime > cooldown 
-            && (shout.IndexOf("bomb") >= 0 
-            || shout.IndexOf("blow") >= 0 
-            || shout.IndexOf("boom") >= 0)) {
+            && (true || shout.IndexOf("bomb") >= 0 
+             || shout.IndexOf("blow") >= 0 
+             || shout.IndexOf("boom") >= 0)) {
             Instantiate(bomb, 
                         new Vector3(transform.position.x, 
                                     transform.position.y, 
                                     transform.position.z), 
                         Quaternion.identity);
             lastTime = Time.time;
+            bombText.text = "Bombs reloading...";
+            bombText.color = Color.red;
         }
-
     }
 
     IEnumerator Listen() {
@@ -47,7 +52,7 @@ public class BombShout : MonoBehaviour {
     }
     
     void Awake() {
-        lastTime = 0;
+        lastTime = initDelay - cooldown;
         if (!spInitListener(Application.dataPath + "/pocketsphinx/model/en-us/en-us",
             null, //Application.dataPath + "/keywords", // not using keyword search mode for now because of splistener bug
             Application.dataPath + "/pocketsphinx/model/en-us/en-us.lm.bin",
@@ -56,14 +61,26 @@ public class BombShout : MonoBehaviour {
 
             Debug.Log("splistener failed to initialize!");
             Debug.Log("splistener error: " + spGetError());
+            bombText.text = "Speech system error";
+            bombText.color = Color.white;
         }
         else {
             Debug.Log("splistener initialized successfully!");
+            spinit = true;
             StartCoroutine(Listen());
         }
     }
 
+    void Update() {
+        if (spinit && Time.time - lastTime > cooldown) {
+            bombText.text = "Bomb ready";
+            bombText.color = Color.white;
+        }
+    }
+
     void OnApplicationQuit() {
-        spCleanUp();
+        if (spinit) {
+            spCleanUp();
+        }
     }
 }

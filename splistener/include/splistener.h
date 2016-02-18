@@ -14,9 +14,9 @@
 // You may modify these according to your needs
 #define SPLBUFSIZE 2048
 #define SPLEXPORT __declspec(dllexport)
-#define SPLCDECL
+#define SPLCLINK // if defined, sets C linkage
 
-#ifdef SPLCDECL
+#ifdef SPLCLINK
 extern "C" {
 #endif
 
@@ -65,11 +65,6 @@ SPLEXPORT bool spInitListener(	const char *hmm_path,
  * it is the caller's responsibility to free the
  * returned string's memory.
  *
- * If you want to be informed of errors in the
- * recording and decoding process, you will 
- * have to check manually (perhaps periodically) 
- * by calling spGetError.
- *
  * @return The last string of recognized speech
  *         or an empty string.
  */
@@ -89,11 +84,16 @@ SPLEXPORT void spCleanUp();
  * it is the caller's responsibility to free the 
  * returned string's memory.
  *
+ * If you want to be informed of errors in the
+ * recording and decoding process, you will
+ * have to check manually (perhaps periodically)
+ * by calling spGetError.
+ *
  * @return The last error message if there was an error,
  *         otherwise an empty string.
  */
 SPLEXPORT char *spGetError();
 
-#ifdef SPLCDECL
+#ifdef SPLCLINK
 }
 #endif

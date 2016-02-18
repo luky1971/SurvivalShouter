@@ -162,31 +162,6 @@ SPLEXPORT bool spInitListener(	const char *hmm_path,
 								int delay) {
     sp_log.open("splog.txt", std::ios_base::app);
     sp_error = "";
-	/*
-    std::string path(model_path);
-    if (path.back() == '/')
-        path.pop_back();
-
-    std::string lang(path.substr(path.find_last_of("/\\") + 1));
-    
-    sp_log << std::endl 
-        << "Using language " << lang << " at " << path << std::endl;
-
-    // Initialize pocketsphinx
-	if (kws_path) {
-		config = cmd_ln_init(NULL, ps_args(), TRUE,
-			"-hmm", (path + "/" + lang).c_str(),
-			"-kws", kws_path,
-			"-dict", (path + "/cmudict-" + lang + ".dict").c_str(),
-			NULL);
-	}
-	else {
-		config = cmd_ln_init(NULL, ps_args(), TRUE,
-			"-hmm", (path + "/" + lang).c_str(),
-			"-lm", (path + "/" + lang + ".lm.bin").c_str(),
-			"-dict", (path + "/cmudict-" + lang + ".dict").c_str(),
-			NULL);
-	}*/
 
 	if (kws_path) {
 		config = cmd_ln_init(NULL, ps_args(), TRUE,

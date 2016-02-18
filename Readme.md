@@ -3,20 +3,19 @@
 Survival Shouter is a modification of the popular Survival Shooter game demo by Unity Technologies
 (https://www.assetstore.unity3d.com/en/#!/content/40756).
 
-## Setup
-
-In addition to the entire Unity project and all assets, this distribution includes pre-built executables
-for 32-bit and 64-bit Windows in the bin folder. To build the game for other platforms, you will have to first
-build the splistener plugin for that platform and add it to the Unity project. For details on how to
-build splistener, see the readme file in the `splistener` folder. For instructions on building a Unity 
-project, please consult the Unity Engine documentation at http://docs.unity3d.com/Manual/index.html.
-
 ## How to play
 
-Survival "Shouter" adds "shouting" (ie, a speech recognition element) to the top-down shooting gameplay.
-Most of the controls are the same as the original: you move with WASD, use the cursor to aim, and click
-to shoot (this version does not currently support mobile platforms). In addition, you can use the following
-voice commands to set a bomb:
+You will have to download and install Unity 5 (https://unity3d.com/get-unity) and then open this folder 
+as a Unity project. Then open `Assets\_CompletedAssets\Scenes\Level 01 5.x.unity` and hit the play button
+at the top of the Unity editor. Only Windows (both 32-bit and 64-bit) is currently supported.
+
+You have to play within the Unity editor because the Unity player for standalone builds has problems
+with plugins that depend on other plugins. Therefore, prebuilt executables for this game are not provided.
+
+Survival "Shouter" adds "shouting" (ie, a speech recognition element) to the top-down shooting 
+gameplay of the original. Most of the controls are the same as the original: you move with WASD, 
+use the cursor to aim, and click to shoot (this version does not currently support mobile platforms).
+In addition, you can use the following voice commands to set a bomb:
 
 * "Bombs away!"
 * "Set bomb"
@@ -28,7 +27,7 @@ You will also note that there is a cooldown between bombs.
 
 ## Technology
 
-This game uses the speech recognition library `pocketsphinx`, which is a part of `CMU Sphinx`. `splistener` is the C++
+This game uses the speech recognition library `pocketsphinx`, which is a part of `CMU Sphinx`. `splistener` is our C++
 plugin that manages the pocketsphinx backend and allows Unity to access the recognized speech data. The C#
 scripts that have been added for this version of the game are found in `Assets/Scripts/Shouting`. For more functional
 details, see the file `specs.pdf`.

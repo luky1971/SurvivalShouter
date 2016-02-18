@@ -4,7 +4,7 @@ using System.Collections;
 public class BombScript : MonoBehaviour {
 
     public GameObject explosion;
-    public float timer = 2.0f;
+    public float timer = 1.5f;
     private float elapsed;
 
     // Use this for initialization

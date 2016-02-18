@@ -6,7 +6,7 @@ public class BombShout : MonoBehaviour {
     
     // import splistener library functions
     [DllImport("splistener")]
-    private static extern bool spInitListener(string model_path, string kws_path, int sample_rate, int delay);
+    private static extern bool spInitListener(string hmm_path, string kws_path, string lm_path, string dict_path, int sample_rate, int delay);
     [DllImport("splistener")]
     private static extern string spGetWords();
     [DllImport("splistener")]
@@ -22,8 +22,8 @@ public class BombShout : MonoBehaviour {
     void ProcessShout(string shout) {
         if(Time.time - lastTime > cooldown 
             && (shout.IndexOf("bomb") >= 0 
-            || shout.IndexOf("explode") >= 0 
-            || shout.IndexOf("blow") >= 0)) {
+            || shout.IndexOf("blow") >= 0 
+            || shout.IndexOf("boom") >= 0)) {
             Instantiate(bomb, 
                         new Vector3(transform.position.x, 
                                     transform.position.y, 
@@ -47,9 +47,13 @@ public class BombShout : MonoBehaviour {
     }
     
     void Awake() {
-        lastTime = -cooldown;
-        if (!spInitListener(Application.dataPath + "/pocketsphinx/model/en-us/", 
-            null, 16000, 100)) {
+        lastTime = 0;
+        if (!spInitListener(Application.dataPath + "/pocketsphinx/model/en-us/en-us",
+            null, //Application.dataPath + "/keywords", // not using keyword search mode for now because of splistener bug
+            Application.dataPath + "/pocketsphinx/model/en-us/en-us.lm.bin",
+            Application.dataPath + "/pocketsphinx/model/en-us/cmudict-en-us.dict", // dict
+            16000, 100)) {
+
             Debug.Log("splistener failed to initialize!");
             Debug.Log("splistener error: " + spGetError());
         }

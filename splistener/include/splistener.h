@@ -24,29 +24,33 @@ extern "C" {
  * Initializes the PocketSphinx decoder and 
  * begins recording from a microphone.
  *
- * Call before using other functions.
+ * Call before using other functions. All of these
+ * parameters must be compatible with pocketsphinx
+ * (see http://cmusphinx.sourceforge.net/wiki/tutorial
+ * for more information and file formats).
  *
- * @param model_path Path to the directory with the 
- *                   acoustic model and dictionary files 
- *                   that should be used (ex. 
- *                   pocketsphinx/model/en-us/).
- *                   To work properly, the filenames
- *                   in this directory should be structured
- *                   like the ones in pocketsphinx/model/en-us/
- *                   in the pocketsphinx distribution, replacing
- *                   en-us with whatever language you're using.
+ * @param hmm_path Acoustic model directory that
+ *                 should be used by the recognizer
+ *                 (ex. pocketsphinx/model/en-us/en-us).
  * @param kws_path File with keywords to recognize in
  *                 keyword spotting mode, or NULL to use
  *                 full language search instead of keyword
  *                 search.
+ * @param lm_path File with full language model to use.
+ *                This is ignored when kws_path is provided
+ *                and in that case can be NULL.
+ * @param dict_path Dictionary file that should be used
+ *                  for the desired language.
  * @param sample_rate The sample rate of the recording.
  * @param delay The amount of time in milliseconds 
  *              between decodings of microphone audio.
  * @return true if initialization was successful, 
  *         otherwise false.
  */
-SPLEXPORT bool spInitListener(	const char *model_path, 
+SPLEXPORT bool spInitListener(	const char *hmm_path, 
                                 const char *kws_path, 
+								const char *lm_path, 
+								const char *dict_path, 
                                 int32_t sample_rate = 16000, 
                                 int delay = 100);
 

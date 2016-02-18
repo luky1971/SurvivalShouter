@@ -22,7 +22,6 @@ voice commands to set a bomb:
 * "Set bomb"
 * "Blow them up!"
 * "Boom!"
-* (or really anything with the word "bomb" or "blow" or "boom")
 
 Note: bombs hurt (a lot). We recommend you run away after setting one.
 You will also note that there is a cooldown between bombs.
@@ -31,8 +30,16 @@ You will also note that there is a cooldown between bombs.
 
 This game uses the speech recognition library `pocketsphinx`, which is a part of `CMU Sphinx`. `splistener` is the C++
 plugin that manages the pocketsphinx backend and allows Unity to access the recognized speech data. The C#
-scripts that have been added for this version of the game are found in `Assets/Scripts/Shouting`. For more technical
+scripts that have been added for this version of the game are found in `Assets/Scripts/Shouting`. For more functional
 details, see the file `specs.pdf`.
+
+Note: for this application, it makes sense to use keyword spotting mode (kws) instead of the full default language
+model (kws would try to recognize only the specified voice commands instead of full english grammar,
+making it more efficient for our purposes). A file `keywords` is in the Assets folder that can be used for kws.
+However, kws has been temporarily disabled because it has been found to cause splistener to crash.
+Until this issue is fixed, the default build uses the full english language model. If you want to try kws,
+replace the null in the second argument of `spInitListener` in the Awake() function of 
+`Assets/Scripts/Shouting/BombShout.cs` with `Application.dataPath + "/keywords"` and then build the project.
 
 ## Acknowledgments
 

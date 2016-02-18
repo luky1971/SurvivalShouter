@@ -148,19 +148,21 @@ static void spListen(int32_t sample_rate, int delay) {
 
     std::chrono::milliseconds delay_dur(delay);
 	// Record and decode loop
-    while (true) {
+    while (ps && mic) {
         spDecode();
         std::this_thread::sleep_for(delay_dur);
     }
 }
 
-SPLEXPORT bool spInitListener(	const char *model_path, 
-                                const char *kws_path, 
-                                int32_t sample_rate, 
-                                int delay) {
+SPLEXPORT bool spInitListener(	const char *hmm_path,
+								const char *kws_path,
+								const char *lm_path,
+								const char *dict_path,
+								int32_t sample_rate,
+								int delay) {
     sp_log.open("splog.txt", std::ios_base::app);
     sp_error = "";
-
+	/*
     std::string path(model_path);
     if (path.back() == '/')
         path.pop_back();
@@ -184,15 +186,30 @@ SPLEXPORT bool spInitListener(	const char *model_path,
 			"-lm", (path + "/" + lang + ".lm.bin").c_str(),
 			"-dict", (path + "/cmudict-" + lang + ".dict").c_str(),
 			NULL);
+	}*/
+
+	if (kws_path) {
+		config = cmd_ln_init(NULL, ps_args(), TRUE,
+			"-hmm", hmm_path,
+			"-kws", kws_path,
+			"-dict", dict_path,
+			NULL);
+	}
+	else {
+		config = cmd_ln_init(NULL, ps_args(), TRUE,
+			"-hmm", hmm_path,
+			"-lm", lm_path,
+			"-dict", dict_path,
+			NULL);
 	}
 
     if (config == NULL) {
-        spFatal("pocketsphinx config initialization failed :(");
+        spFatal("pocketsphinx command line initialization failed :(");
         return false;
     }
     
     if ((ps = ps_init(config)) == NULL) {
-        spFatal("pocketsphinx initialization failed :(");
+        spFatal("pocketsphinx decoder initialization failed :(");
         return false;
     }
 

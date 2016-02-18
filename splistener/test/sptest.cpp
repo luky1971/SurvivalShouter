@@ -7,27 +7,33 @@
 #include "splistener.h"
 
 int main(int argc, char *argv[]) {
-	const char *model_path = "pocketsphinx/model/en-us/";
-	const char *kws_path = NULL;
+	const char *hmm = "pocketsphinx/model/en-us/en-us";
+	const char *lm = "pocketsphinx/model/en-us/en-us.lm.bin";
+	const char *dict = "pocketsphinx/model/en-us/cmudict-en-us.dict";
+	const char *kws = NULL;
 	std::string words, arg;
 	
 	for (int i = 1; i < argc - 1; ++i) {
 		arg = std::string(argv[i]);
-		if (arg == "-m") {
-			model_path = argv[i + 1];
+		if (arg == "-hmmm") {
+			hmm = argv[i + 1];
 			++i;
 		}
-		if (arg == "-k") {
-			kws_path = argv[i + 1];
+		else if (arg == "-lm") {
+			lm = argv[i + 1];
+			++i;
+		}
+		else if (arg == "-dict") {
+			dict = argv[i + 1];
+			++i;
+		}
+		else if (arg == "-kws") {
+			kws = argv[i + 1];
 			++i;
 		}
 	}
 
-	std::cout << "Using model/dict in  " << model_path << std::endl;
-	if (kws_path)
-		std::cout << "Using keyword search with " << kws_path << std::endl;
-
-	if (!spInitListener(model_path, kws_path)) {
+	if (!spInitListener(hmm, kws, lm, dict)) {
 		std::cout << spGetError() << std::endl;
 		return 1;
 	}

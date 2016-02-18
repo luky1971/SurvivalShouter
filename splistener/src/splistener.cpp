@@ -1,6 +1,4 @@
 /*
- * Copyright (c) 2016 Ahnaf Siddiqui.
- *
  * splistener utilizes PocketSphinx to continuously
  * recognize speech from a microphone and return spoken text.
  *

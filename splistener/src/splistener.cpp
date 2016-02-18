@@ -58,17 +58,17 @@ static void spFatal(std::string err_msg) {
  * When calling this function in a realtime loop, delay
  * by some amount of time between calls keeping in mind
  * your recording's sample rate and maximum samples read
- * per call (ex.sleep the thread for 100 milliseconds)
+ * per call (ex. sleep the thread for 100 milliseconds)
  * so that some audio can be recorded for the next call.
  *
  * @return true if a speech session was completed and
  *         transcribed this block, otherwise false.
  */
 static bool spDecode() {
-	static bool uttered = false;
+    static bool uttered = false;
 
-	// lock pocketsphinx resources to make sure they 
-	// don't get freed by main thread while in use
+    // lock pocketsphinx resources to make sure they 
+    // don't get freed by main thread while in use
     std::lock_guard<std::mutex> ps_lock(ps_mtx);
     if(!mic || !ps)
         return false;
@@ -129,54 +129,54 @@ static bool spDecode() {
  *              between decodes.
  */
 static void spListen(int32_t sample_rate, int delay) {
-	// Start recording
-	sp_log << "Opening microphone with sample rate "
-		<< sample_rate << std::endl;
-	if ((mic = ad_open_dev(NULL, sample_rate)) == NULL) {
-		spFatal("failed to open microphone :(");
-		return;
-	}
+    // Start recording
+    sp_log << "Opening microphone with sample rate "
+        << sample_rate << std::endl;
+    if ((mic = ad_open_dev(NULL, sample_rate)) == NULL) {
+        spFatal("failed to open microphone :(");
+        return;
+    }
 
-	if (ad_start_rec(mic) < 0) {
-		spFatal("failed to start recording :(");
-		return;
-	}
-	if (ps_start_utt(ps) < 0) {
-		spFatal("failed to start utterance :(");
-		return;
-	}
+    if (ad_start_rec(mic) < 0) {
+        spFatal("failed to start recording :(");
+        return;
+    }
+    if (ps_start_utt(ps) < 0) {
+        spFatal("failed to start utterance :(");
+        return;
+    }
 
     std::chrono::milliseconds delay_dur(delay);
-	// Record and decode loop
+    // Record and decode loop
     while (ps && mic) {
         spDecode();
         std::this_thread::sleep_for(delay_dur);
     }
 }
 
-SPLEXPORT bool spInitListener(	const char *hmm_path,
-								const char *kws_path,
-								const char *lm_path,
-								const char *dict_path,
-								int32_t sample_rate,
-								int delay) {
+SPLEXPORT bool spInitListener(  const char *hmm_path,
+                                const char *kws_path,
+                                const char *lm_path,
+                                const char *dict_path,
+                                int32_t sample_rate,
+                                int delay) {
     sp_log.open("splog.txt", std::ios_base::app);
     sp_error = "";
 
-	if (kws_path) {
-		config = cmd_ln_init(NULL, ps_args(), TRUE,
-			"-hmm", hmm_path,
-			"-kws", kws_path,
-			"-dict", dict_path,
-			NULL);
-	}
-	else {
-		config = cmd_ln_init(NULL, ps_args(), TRUE,
-			"-hmm", hmm_path,
-			"-lm", lm_path,
-			"-dict", dict_path,
-			NULL);
-	}
+    if (kws_path) {
+        config = cmd_ln_init(NULL, ps_args(), TRUE,
+            "-hmm", hmm_path,
+            "-kws", kws_path,
+            "-dict", dict_path,
+            NULL);
+    }
+    else {
+        config = cmd_ln_init(NULL, ps_args(), TRUE,
+            "-hmm", hmm_path,
+            "-lm", lm_path,
+            "-dict", dict_path,
+            NULL);
+    }
 
     if (config == NULL) {
         spFatal("pocketsphinx command line initialization failed :(");
@@ -207,25 +207,25 @@ SPLEXPORT char *spGetWords() {
 
 SPLEXPORT void spCleanUp() {
     std::lock_guard<std::mutex> ps_lock(ps_mtx);
-	if (mic) {
-		ad_close(mic);
-		mic = NULL;
-	}
-	if (ps) {
-		ps_free(ps);
-		ps = NULL;
-	}
-	if (config) {
-		cmd_ln_free_r(config);
-		config = NULL;
-	}
-	if (words) {
-		delete words;
-		words = NULL;
-	}
-	if (sp_log.is_open()) {
-		sp_log.close();
-	}
+    if (mic) {
+        ad_close(mic);
+        mic = NULL;
+    }
+    if (ps) {
+        ps_free(ps);
+        ps = NULL;
+    }
+    if (config) {
+        cmd_ln_free_r(config);
+        config = NULL;
+    }
+    if (words) {
+        delete words;
+        words = NULL;
+    }
+    if (sp_log.is_open()) {
+        sp_log.close();
+    }
 }
 
 SPLEXPORT char *spGetError() {

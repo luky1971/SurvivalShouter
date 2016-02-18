@@ -47,10 +47,10 @@ extern "C" {
  * @return true if initialization was successful, 
  *         otherwise false.
  */
-SPLEXPORT bool spInitListener(	const char *hmm_path, 
+SPLEXPORT bool spInitListener(  const char *hmm_path, 
                                 const char *kws_path, 
-								const char *lm_path, 
-								const char *dict_path, 
+                                const char *lm_path, 
+                                const char *dict_path, 
                                 int32_t sample_rate = 16000, 
                                 int delay = 100);
 

@@ -25,7 +25,7 @@ public class BombShout : MonoBehaviour {
 
     void ProcessShout(string shout) {
         if(Time.time - lastTime > cooldown 
-            && (true || shout.IndexOf("bomb") >= 0 
+            && (shout.IndexOf("bomb") >= 0 
              || shout.IndexOf("blow") >= 0 
              || shout.IndexOf("boom") >= 0)) {
             Instantiate(bomb, 

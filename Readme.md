@@ -10,20 +10,21 @@ as a Unity project. Then open `Assets\_CompletedAssets\Scenes\Level 01 5.x.unity
 at the top of the Unity editor. Only Windows (both 32-bit and 64-bit) is currently supported.
 
 You have to play within the Unity editor because the Unity player for standalone builds has problems
-with plugins that depend on other plugins. Therefore, prebuilt executables for this game are not provided.
+with plugins that depend on other plugins. Therefore, prebuilt executables for this game are not provided
+until we find a workaround.
 
 Survival "Shouter" adds "shouting" (ie, a speech recognition element) to the top-down shooting 
 gameplay of the original. Most of the controls are the same as the original: you move with WASD, 
-use the cursor to aim, and click to shoot (this version does not currently support mobile platforms).
+use the cursor to aim, and left-click to shoot (this version does not currently support mobile platforms).
 In addition, you can use the following voice commands to set a bomb:
 
 * "Bombs away!"
 * "Set bomb"
 * "Blow them up!"
 * "Boom!"
+* (or something else with the word "bomb", "blow", or "boom" in it)
 
 Note: bombs hurt (a lot). We recommend you run away after setting one.
-You will also note that there is a cooldown between bombs.
 
 ## Technology
 
@@ -38,7 +39,7 @@ making it more efficient for our purposes). A file `keywords` is in the Assets f
 However, kws has been temporarily disabled because it has been found to cause splistener to crash.
 Until this issue is fixed, the default build uses the full english language model. If you want to try kws,
 replace the null in the second argument of `spInitListener` in the Awake() function of 
-`Assets/Scripts/Shouting/BombShout.cs` with `Application.dataPath + "/keywords"` and then build the project.
+`Assets/Scripts/Shouting/BombShout.cs` with `Application.dataPath + "/keywords"` and then run the game.
 
 ## Acknowledgments
 

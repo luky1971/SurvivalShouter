@@ -229,6 +229,8 @@ SPLEXPORT void spCleanUp() {
 }
 
 SPLEXPORT char *spGetError() {
+    // Copying is needed because can't return const string
+    // to managed environment like .NET
     char *s = new char[sp_error.size() + 1];
     std::copy(sp_error.begin(), sp_error.end(), s);
     s[sp_error.size()] = '\0';
